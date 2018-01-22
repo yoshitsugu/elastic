@@ -2,38 +2,39 @@
 
 set -o errexit -o nounset -o xtrace
 
-if [ "$KIND" == "build" ]; then
+if [ "$KIND" == "build" ] || [ "$KIND" == "local" ] ; then
     cargo test --verbose --all
 
-    BRANCH=$(if [ "$TRAVIS_PULL_REQUEST" == "false" ]; then echo $TRAVIS_BRANCH; else echo $TRAVIS_PULL_REQUEST_BRANCH; fi)
+    BRANCH=$(if [ "$KIND" == "local" ]; then echo "local"; elif [ "$TRAVIS_PULL_REQUEST" == "false" ]; then echo $TRAVIS_BRANCH; else echo $TRAVIS_PULL_REQUEST_BRANCH; fi)
 
-    if [ "$BRANCH" == "vNext" ]; then
-        echo "uploading crate docs"
-
+    if [ "$BRANCH" == "vNext" ] || [ "$KIND" == "local" ] ; then
         cargo doc --no-deps --all
 
-        REV=$(git rev-parse --short HEAD)
-        cd target/doc
-        rm -rf .git || true
-        git init
-        git remote add upstream "https://$GH_TOKEN@github.com/elastic-rs/elastic.git"
-        git config user.name "elastic-rs"
-        git config user.email "travis@elastic.rs"
-        git add -A .
-        git commit -qm "Build docs at ${TRAVIS_REPO_SLUG}@${REV}"
+        if [ "$BRANCH" == "vNext" ] ; then
+            echo "uploading crate docs"
 
-        echo "Pushing gh-pages to GitHub"
-        git push -q upstream HEAD:refs/heads/gh-pages --force
+            REV=$(git rev-parse --short HEAD)
+            cd target/doc
+            rm -rf .git || true
+            git init
+            git remote add upstream "https://$GH_TOKEN@github.com/elastic-rs/elastic.git"
+            git config user.name "elastic-rs"
+            git config user.email "travis@elastic.rs"
+            git add -A .
+            git commit -qm "Build docs at ${TRAVIS_REPO_SLUG}@${REV}"
+
+            echo "Pushing gh-pages to GitHub"
+            git push -q upstream HEAD:refs/heads/gh-pages --force
+        fi
     fi
-elif [ "$KIND" == "bench" ]; then
+fi
+if [ "$KIND" == "bench" ] || [ "$KIND" == "local" ] ; then
     cargo bench --verbose --all
 
-    cd benches
-    cargo build --all
-elif [ "$KIND" == "integration" ]; then 
-    cd tests/run
-    cargo build
+    cargo build --manifest-path benches/Cargo.toml --all
+fi
+if [ "$KIND" == "integration" ] || [ "$KIND" == "local" ] ; then
+    ELASTIC_INTEGRATION_LOG=debug
 
-    export RUST_LOG=info
-    ../../target/debug/run default sniffed_node
+    cargo run --manifest-path tests/run/Cargo.toml -- --runs default sniffed_node --container-path tests/run/containers
 fi

@@ -41,10 +41,12 @@ pub mod index_create;
 pub mod index_open;
 pub mod index_close;
 pub mod index_delete;
+pub mod index_exists;
 pub use self::index_create::IndexCreateRequestBuilder;
 pub use self::index_open::IndexOpenRequestBuilder;
 pub use self::index_close::IndexCloseRequestBuilder;
 pub use self::index_delete::IndexDeleteRequestBuilder;
+pub use self::index_exists::IndexExistsRequestBuilder;
 
 // Misc requests
 pub mod ping;
@@ -242,5 +244,20 @@ pub mod prelude {
     pub use super::params::*;
     pub use super::endpoints::*;
 
-    pub use super::{empty_body, DefaultBody, GetRequestBuilder, IndexCreateRequestBuilder, IndexRequestBuilder, PutMappingRequestBuilder, RawRequestBuilder, SearchRequestBuilder};
+    pub use super::{
+        empty_body,
+        DefaultBody,
+        DeleteRequestBuilder,
+        GetRequestBuilder,
+        IndexCreateRequestBuilder,
+        IndexDeleteRequestBuilder,
+        IndexOpenRequestBuilder,
+        IndexCloseRequestBuilder,
+        IndexRequestBuilder,
+        PutMappingRequestBuilder,
+        RawRequestBuilder,
+        SearchRequestBuilder,
+        PingRequestBuilder,
+        UpdateRequestBuilder,
+    };
 }

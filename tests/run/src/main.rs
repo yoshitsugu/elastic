@@ -29,20 +29,28 @@ use clap::{App, Arg};
 
 mod document;
 mod search;
+mod index;
 mod run_tests;
 mod build_client;
 mod build_container;
 mod wait_until_ready;
 
 fn main() {
-    env_logger::init().unwrap();
+    env_logger::init_from_env(env_logger::Env::default().filter("ELASTIC_INTEGRATION_LOG"));
 
     let matches = App::new("elastic_integration_tests")
         .arg(
             Arg::with_name("runs")
+                .long("runs")
                 .default_value("default")
                 .takes_value(true)
                 .multiple(true),
+        )
+        .arg(
+            Arg::with_name("container-path")
+                .long("container-path")
+                .default_value("./containers")
+                .takes_value(true),
         )
         .get_matches();
 
@@ -50,6 +58,7 @@ fn main() {
     let mut total = 0;
 
     let runs = matches.values_of("runs").expect("missing `runs` argument");
+    let containers_path = matches.value_of("container-path").expect("missing `container-path` argument");
 
     for run in runs {
         println!("\n{} tests\n", run);
@@ -58,7 +67,7 @@ fn main() {
         let client = build_client::call(&core.handle(), run).unwrap();
 
         // Build and start a container to run tests against
-        build_container::start(run).unwrap();
+        build_container::start(run, containers_path).unwrap();
 
         // Wait until the container is ready
         core.run(wait_until_ready::call(client.clone(), 60))

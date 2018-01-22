@@ -1,8 +1,8 @@
 use std::sync::Arc;
 use std::error::Error as StdError;
 use futures::{Future, IntoFuture, Poll};
-use futures::future::Either;
-use futures_cpupool::CpuPool;
+use futures::future::{Either, FutureResult};
+use futures_cpupool::{CpuPool, CpuFuture};
 use tokio_core::reactor::Handle;
 use reqwest::Error as ReqwestError;
 use reqwest::unstable::async::{Client as AsyncHttpClient, ClientBuilder as AsyncHttpClientBuilder, RequestBuilder as AsyncHttpRequestBuilder};
@@ -165,6 +165,21 @@ impl Sender for AsyncSender {
         });
 
         PendingResponse::new(req_future)
+    }
+}
+
+impl AsyncSender {
+    pub(crate) fn maybe_async<TFn, TResult>(&self, f: TFn)
+    -> Either<CpuFuture<TResult, Error>, FutureResult<TResult, Error>>
+    where
+        TFn: FnOnce() -> Result<TResult, Error> + Send + 'static,
+        TResult: Send + 'static,
+    {
+        if let Some(ref ser_pool) = self.serde_pool {
+            Either::A(ser_pool.spawn_fn(f))
+        } else {
+            Either::B(f().into_future())
+        }
     }
 }
 

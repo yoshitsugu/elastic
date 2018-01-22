@@ -16,7 +16,7 @@ pub mod parse;
 pub use self::sync::*;
 pub use self::async::*;
 
-pub use elastic_responses::{BulkErrorsResponse, BulkResponse, CommandResponse, DeleteResponse, GetResponse, IndexResponse, PingResponse, SearchResponse, Shards, UpdateResponse};
+pub use elastic_responses::{BulkErrorsResponse, BulkResponse, CommandResponse, DeleteResponse, GetResponse, IndicesExistsResponse, IndexResponse, PingResponse, SearchResponse, Shards, UpdateResponse};
 
 pub use elastic_responses::search;
 pub use elastic_responses::bulk;
@@ -24,5 +24,5 @@ pub use elastic_responses::bulk;
 pub mod prelude {
     /*! A glob import for convenience. */
 
-    pub use super::{AsyncResponseBuilder, SyncResponseBuilder, BulkErrorsResponse, BulkResponse, CommandResponse, DeleteResponse, GetResponse, IndexResponse, PingResponse, SearchResponse, Shards, UpdateResponse};
+    pub use super::{AsyncResponseBuilder, SyncResponseBuilder, BulkErrorsResponse, BulkResponse, CommandResponse, DeleteResponse, GetResponse, IndicesExistsResponse, IndexResponse, PingResponse, SearchResponse, Shards, UpdateResponse};
 }
